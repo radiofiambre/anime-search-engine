@@ -1,0 +1,12 @@
+@import 'core/variables';
+@import 'core/reset';
+@import 'layout/page';
+@import 'layout/header';
+
+* {
+    font-family: $font-main;
+}
+
+body {
+    width: 100%;
+}
