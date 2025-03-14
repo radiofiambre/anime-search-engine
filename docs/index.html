@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Buscador de series anime</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
+    
+    <link rel="icon" href="./images/favicon.png" />
+    <link rel="stylesheet" href="./assets/index-a92009f5.css">
+  </head>
+
+  <body>
+    <header class="header">
+  <h1>Buscador de series de anime</h1>
+</header>
+    <section class="searchSection">
+    <input class="input js-input" type="text" placeholder="Escribe una serie...">
+    <input class="searchSectionBtn js-btnSearch" type="submit" value="Buscar">
+    <button class="searchSectionBtn js-btnReset">Resetear</button>
+</section>
+<div class="display">
+    <section class="favouritesColumn">
+        <h2>Series favoritas &#128525;</h2>
+        <ul class="favList js-favList">
+        </ul>
+        <button class="btnRemoveAll js-btnRemoveAll">Vaciar</button>
+    </section>
+    <section class="resultsColumn">
+        <h2>Resultados de tu búsqueda &#128270; &#128250;</h2>
+        <ul class="resultsList js-resultsList">
+        </ul>
+    </section>
+</div>
+    <script src="./js/main.js"></script>
+  </body>
+</html>
