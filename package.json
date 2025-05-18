@@ -1,7 +1,7 @@
 {
-	"name": "adalab-web-starter-kit",
+	"name": "anime-search-engine",
 	"version": "4.0.0",
-	"description": "Adalab web starter kit",
+	"description": "Anime search engine",
 	"type": "module",
 	"devDependencies": {
 		"@vituum/vite-plugin-concat": "^1.0.0",
@@ -22,9 +22,9 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com:Adalab/adalab-web-starter-kit.git"
+		"url": "git+ssh://git@github.com:radiofiambre/anime-search-engine.git"
 	},
-	"author": "Adalab",
+	"author": "RadioFiambre",
 	"license": "MIT",
-	"homepage": "https://github.com/adalab/adalab-web-starter-kit"
+	"homepage": "https://github.com/radiofiambre/anime-search-engine"
 }
