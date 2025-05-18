@@ -1,14 +1,11 @@
 "use strict";
 
-// const { render } = require("sass");
-
-
 
 // ELEMENTOS HTML
 const input = document.querySelector(".js-input");
 const searchButton = document.querySelector(".js-btnSearch");
-let favsList = document.querySelector(".js-favList");
-let resultsList = document.querySelector(".js-resultsList");
+const favsList = document.querySelector(".js-favList");
+const resultsList = document.querySelector(".js-resultsList");
 const buttonEmptyFavs = document.querySelector(".js-btnRemoveAll");
 const resetButton = document.querySelector(".js-btnReset");
 
@@ -18,185 +15,133 @@ let searchResults = [];
 let favShowsArray = [];
 
 
+// FUNCIONES
 
-// FUNCIÓN DE BÚSQUEDA
-
+// Obtener datos de la API
 function getShowFromAPI(event) {
   event.preventDefault();
-  const search = input.value.toLowerCase();
+  const search = input.value.trim().toLowerCase();
+  if (!search) return;
+
   const apiURL = `https://api.jikan.moe/v4/anime?q=${search}`;
+
   fetch(apiURL)
     .then((response) => response.json())
     .then((data) => {
       searchResults = data.data;
-      resultsList.innerHTML = '';
-      for (const show of searchResults) {
-        const img = show.images.jpg.image_url;
-        const title = show.title;
-        const noImg = 'https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png';
-        const newImg = 'https://placehold.co/225?text=Sin+imagen&font=roboto.png';
-        if (img === noImg) {
-          resultsList.innerHTML += `
-            <li class="card">
-                <img src="${newImg}" alt="">
-                <h3>${title}</h3>
-            </li>
-            `;
-        } else {
-          resultsList.innerHTML += `
-            <li class="card">
-                <img src="${img}" alt="">
-                <h3>${title}</h3>
-            </li>
-            `;
-        }
-      }
-      manageFavClassInResultsList(); // debe ir dentro del for porque está trabando en asíncrono
-    });
+      renderSearchResults();
+    })
+    .catch((err) => console.error("Error al buscar:", err));
 }
 
-searchButton.addEventListener("click", getShowFromAPI);
+// Renderizar resultados de búsqueda
+function renderSearchResults() {
+  resultsList.innerHTML = "";
+  for (const show of searchResults) {
+    const img = show.images?.jpg?.image_url || "https://placehold.co/225?text=Sin+imagen&font=roboto.png";
+    const title = show.title;
+    const isFav = favShowsArray.some((fav) => fav.title === title);
 
-// FUNCIÓN RENDERIZAR EN FAVSLIST
+    const li = document.createElement("li");
+    li.classList.add("card");
+    if (isFav) li.classList.add("favResult");
 
+    li.innerHTML = `
+      <img src="${img}" alt="${title}">
+      <h3>${title}</h3>
+    `;
+
+    resultsList.appendChild(li);
+  }
+}
+
+// Añadir o quitar un show a favoritos
+function selectFavShow(event) {
+  const clickedShow = event.target.closest("li.card");
+  if (!clickedShow || !resultsList.contains(clickedShow)) return;
+
+  const title = clickedShow.querySelector("h3").textContent;
+  const img = clickedShow.querySelector("img").src;
+
+  const showExists = favShowsArray.find((fav) => fav.title === title);
+
+  if (!showExists) {
+    favShowsArray.push({ title, img });
+  } else {
+    favShowsArray = favShowsArray.filter((fav) => fav.title !== title);
+  }
+
+  updateFavList();
+  setFavsInLocalStorage();
+  renderSearchResults();
+}
+
+// Renderizar lista de favoritos
 function updateFavList() {
-  favsList.innerHTML = '';
-  favShowsArray.forEach((favShow) => 
-  favsList.innerHTML += `
-    <li class="card fav">
-        <button class="btnX">&#10006;</button>
-        <img src="${favShow.img}" alt="">
-        <h3>${favShow.title}</h3>
-    </li>
-    `)
-}
-
-
-
-// Añadir o quitar clase favResult de resultsList
-
-function manageFavClassInResultsList() {
-  // cogerlo del array searchResults, no del DOM
-  const resultsListShowsTitles = resultsList.querySelectorAll('h3');
-  resultsListShowsTitles.forEach((resultsListShowTitle) => {
-    // Coger texto del título
-    const showTitleText = resultsListShowTitle.textContent;
-    const exists = favShowsArray.find(
-      (favShow) => favShow.title === showTitleText
-    );
-    if (exists) {
-      resultsListShowTitle.parentElement.classList.add('favResult');
-    } else {
-      resultsListShowTitle.parentElement.classList.remove('favResult');
-    }
+  favsList.innerHTML = "";
+  favShowsArray.forEach((favShow) => {
+    const li = document.createElement("li");
+    li.classList.add("card", "fav");
+    li.innerHTML = `
+      <button class="btnX" aria-label="Eliminar">&#10006;</button>
+      <img src="${favShow.img}" alt="${favShow.title}">
+      <h3>${favShow.title}</h3>
+    `;
+    favsList.appendChild(li);
   });
 }
 
-
-
-// FUNCIÓN CACHEAR FAVORITOS DESDE EL ARRAY
+// Guardar favoritos en LocalStorage
 function setFavsInLocalStorage() {
-  localStorage.setItem('Favorite Shows:', JSON.stringify(favShowsArray)); 
+  localStorage.setItem("FavoriteShows", JSON.stringify(favShowsArray));
 }
 
-
-
-// FUNCIÓN ACTUALIZAR ARRAY DE FAVORITOS
-function selectFavShow(event) {
-  // Encontrar el <li> más cercano al elemento clicado
-  const clickedShow = event.target.closest('li');
-  // Verificar que el clic ocurrió dentro de un <li> y que no ha pulsado la renderlist
-  if (clickedShow !== resultsList) {
-    const clickedShowImg = clickedShow.querySelector('img').src;
-    const clickedShowTitle = clickedShow.querySelector('h3').textContent;
-    const favShow = {
-      img: clickedShowImg,
-      title: clickedShowTitle,
-    }
-    favShowsArray.push(favShow);
-    updateFavList();
-    setFavsInLocalStorage();
-    manageFavClassInResultsList();
-  }
-}
-
-resultsList.addEventListener('click', selectFavShow);
-
-
-
-// FUNCIÓN RENDERIZAR FAVS
+// Cargar favoritos del LocalStorage
 function loadLocalStorage() {
-  const savedFavShows = localStorage.getItem('Favorite Shows:');
-  if(savedFavShows) {
-    favShowsArray = JSON.parse(savedFavShows);
+  const saved = localStorage.getItem("FavoriteShows");
+  if (saved) {
+    favShowsArray = JSON.parse(saved);
     updateFavList();
   }
 }
 
-// Cargar el LS siempre que se abra la página
-loadLocalStorage();
-
-
-
-// BONUS: BORRAR FAVORITOS
-
-// De un show favorito, eliminar la clase, quitar del array y actualizar LS
-function removeFavShow(noFavShow) {
-  // Quitar clase .fav
-  noFavShow.classList.remove('fav');  
-  // Eliminar del array
-  const noFavShowTitle = noFavShow.querySelector('h3').textContent;
-  const noFavShowIndex = favShowsArray.findIndex((favShow) => favShow.title === noFavShowTitle);
-  favShowsArray.splice(noFavShowIndex, 1);
-  // Actualizar listado favs
-  updateFavList();
-  // Actualizar ls
-  setFavsInLocalStorage();
-  // Actualizar favs de resultsList
-  manageFavClassInResultsList();
-}
-
-
-// Eliminar un solo show favorito
+// Eliminar un favorito individual
 function removeOneFavShow(event) {
-    const noFavShow = event.target.parentElement;
-    removeFavShow(noFavShow);
+  const btn = event.target;
+  if (!btn.classList.contains("btnX")) return;
+
+  const li = btn.closest("li.fav");
+  const title = li.querySelector("h3").textContent;
+
+  favShowsArray = favShowsArray.filter((fav) => fav.title !== title);
+  updateFavList();
+  setFavsInLocalStorage();
+  renderSearchResults();
 }
 
-// Si el botón es dinámico (generado tras una acción como un fetch), usa delegación de eventos:
-document.body.addEventListener("click", (event) => {
-  if (event.target.classList.contains("btnX")) {
-    removeOneFavShow(event);
-  }
-})
-
-
-
-// BOTÓN ELIMINAR TODOS LOS FAVORITOS
-
-// Eliminar para todos los shows favoritos
+// Eliminar todos los favoritos
 function removeAllFavShows() {
-    const noFavShows = document.querySelectorAll('.fav');
-    noFavShows.forEach((noFavShow) => {
-      removeFavShow(noFavShow);
-    });
+  favShowsArray = [];
+  updateFavList();
+  setFavsInLocalStorage();
+  renderSearchResults();
 }
 
-buttonEmptyFavs.addEventListener('click', removeAllFavShows);
-
-
-// BOTÓN RESET
-
+// Reset
 function resetAll() {
-  // actualice el array de favoritos
-  // se eliminen todos los favoritos
-  // se elimine de localstorage
-  // quite la clase de favoritos
   removeAllFavShows();
-  // se eliminen los resultados de búsqueda
-  resultsList = '';
-  // se limpie el texto del input
-  input.value = '';
+  searchResults = [];
+  resultsList.innerHTML = "";
+  input.value = "";
 }
 
-resetButton.addEventListener('click', resetAll);
+// EVENTOS
+
+searchButton.addEventListener("click", getShowFromAPI);
+resultsList.addEventListener("click", selectFavShow);
+favsList.addEventListener("click", removeOneFavShow);
+buttonEmptyFavs.addEventListener("click", removeAllFavShows);
+resetButton.addEventListener("click", resetAll);
+
+// Inicialización
+loadLocalStorage();
