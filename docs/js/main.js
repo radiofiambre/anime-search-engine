@@ -1,18 +1,9 @@
-const v=document.querySelector(".js-input"),p=document.querySelector(".js-btnSearch");let h=document.querySelector(".js-favList"),o=document.querySelector(".js-resultsList");const w=document.querySelector(".js-btnRemoveAll"),y=document.querySelector(".js-btnReset");let m=[],c=[];function F(t){t.preventDefault();const s=`https://api.jikan.moe/v4/anime?q=${v.value.toLowerCase()}`;fetch(s).then(n=>n.json()).then(n=>{m=n.data,o.innerHTML="";for(const i of m){const r=i.images.jpg.image_url,u=i.title,g="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png",L="https://placehold.co/225?text=Sin+imagen&font=roboto.png";r===g?o.innerHTML+=`
-            <li class="card">
-                <img src="${L}" alt="">
-                <h3>${u}</h3>
-            </li>
-            `:o.innerHTML+=`
-            <li class="card">
-                <img src="${r}" alt="">
-                <h3>${u}</h3>
-            </li>
-            `}l()})}p.addEventListener("click",F);function a(){h.innerHTML="",c.forEach(t=>h.innerHTML+=`
-    <li class="card fav">
-        <button class="btnX">&#10006;</button>
-        <img src="${t.img}" alt="">
-        <h3>${t.title}</h3>
-    </li>
-    `)}function l(){o.querySelectorAll("h3").forEach(e=>{const s=e.textContent;c.find(i=>i.title===s)?e.parentElement.classList.add("favResult"):e.parentElement.classList.remove("favResult")})}function d(){localStorage.setItem("Favorite Shows:",JSON.stringify(c))}function q(t){const e=t.target.closest("li");if(e!==o){const s=e.querySelector("img").src,n=e.querySelector("h3").textContent,i={img:s,title:n};c.push(i),a(),d(),l()}}o.addEventListener("click",q);function E(){const t=localStorage.getItem("Favorite Shows:");t&&(c=JSON.parse(t),a())}E();function S(t){t.classList.remove("fav");const e=t.querySelector("h3").textContent,s=c.findIndex(n=>n.title===e);c.splice(s,1),a(),d(),l()}function b(t){const e=t.target.parentElement;S(e)}document.body.addEventListener("click",t=>{t.target.classList.contains("btnX")&&b(t)});function f(){document.querySelectorAll(".fav").forEach(e=>{S(e)})}w.addEventListener("click",f);function I(){f(),o="",v.value=""}y.addEventListener("click",I);
+const f=document.querySelector(".js-input"),L=document.querySelector(".js-btnSearch"),d=document.querySelector(".js-favList"),r=document.querySelector(".js-resultsList"),g=document.querySelector(".js-btnRemoveAll"),p=document.querySelector(".js-btnReset");let h=[],s=[];function E(e){e.preventDefault();const t=f.value.trim().toLowerCase();if(!t)return;const o=`https://api.jikan.moe/v4/anime?q=${t}`;fetch(o).then(n=>n.json()).then(n=>{h=n.data,a()}).catch(n=>console.error("Error al buscar:",n))}function a(){var e,t;r.innerHTML="";for(const o of h){const n=((t=(e=o.images)==null?void 0:e.jpg)==null?void 0:t.image_url)||"https://placehold.co/225?text=Sin+imagen&font=roboto.png",c=o.title,i=s.some(S=>S.title===c),l=document.createElement("li");l.classList.add("card"),i&&l.classList.add("favResult"),l.innerHTML=`
+      <img src="${n}" alt="${c}">
+      <h3>${c}</h3>
+    `,r.appendChild(l)}}function b(e){const t=e.target.closest("li.card");if(!t||!r.contains(t))return;const o=t.querySelector("h3").textContent,n=t.querySelector("img").src;s.find(i=>i.title===o)?s=s.filter(i=>i.title!==o):s.push({title:o,img:n}),u(),m(),a()}function u(){d.innerHTML="",s.forEach(e=>{const t=document.createElement("li");t.classList.add("card","fav"),t.innerHTML=`
+      <button class="btnX" aria-label="Eliminar">&#10006;</button>
+      <img src="${e.img}" alt="${e.title}">
+      <h3>${e.title}</h3>
+    `,d.appendChild(t)})}function m(){localStorage.setItem("FavoriteShows",JSON.stringify(s))}function y(){const e=localStorage.getItem("FavoriteShows");e&&(s=JSON.parse(e),u())}function q(e){const t=e.target;if(!t.classList.contains("btnX"))return;const n=t.closest("li.fav").querySelector("h3").textContent;s=s.filter(c=>c.title!==n),u(),m(),a()}function v(){s=[],u(),m(),a()}function w(){v(),h=[],r.innerHTML="",f.value=""}L.addEventListener("click",E);r.addEventListener("click",b);d.addEventListener("click",q);g.addEventListener("click",v);p.addEventListener("click",w);y();
 //# sourceMappingURL=main.js.map
